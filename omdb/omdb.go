@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 )
 
 type Result struct {
@@ -21,7 +22,14 @@ type SearchResult struct {
 }
 
 func Search(apiKey, title string) (Result, error) {
-	resp, err := http.Get("http://www.omdbapi.com/?apiKey=" + apiKey + "&s=" + title)
+	var v url.Values
+
+	v.Set("apikey", apiKey)
+	v.Set("s", title)
+
+	resp, err := http.Get(
+		"http://www.omdbapi.com/?" + v.Encode(),
+	)
 
 
 	if err != nil {
@@ -35,14 +43,12 @@ func Search(apiKey, title string) (Result, error) {
 
 	var result Result
 
-	if err :=  json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return Result{}, fmt.Errorf(
 			"failed to decode response from omdb: %w",
 			err, 
 		)
 	}
-
-
 	return result, nil
 
 }
